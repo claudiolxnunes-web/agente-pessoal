@@ -60,4 +60,6 @@ jobs:
           source venv/bin/activate
           pip install -r requirements-server.txt --quiet
           python -c "from database.models import init_db; init_db()"
+          sudo systemctl restart agente-api
+          sudo systemctl status agente-api --no-pager
           echo "Deploy concluido com sucesso!"
