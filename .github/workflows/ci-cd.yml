@@ -50,12 +50,12 @@ jobs:
     - name: Deploy via SSH para GCP
       env:
         SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        HOST: ${{ secrets.DEPLOY_HOST }}
-        USER: ${{ secrets.DEPLOY_USER }}
+        REMOTE_HOST: ${{ secrets.DEPLOY_HOST }}
+        REMOTE_USER: ${{ secrets.DEPLOY_USER }}
       run: |
         echo "$SSH_KEY" > deploy_key.pem
         chmod 600 deploy_key.pem
-        ssh -i deploy_key.pem -o StrictHostKeyChecking=no $USER@$HOST '
+        ssh -i deploy_key.pem -o StrictHostKeyChecking=no "$REMOTE_USER@$REMOTE_HOST" '
           set -e
           cd ~/agente_pessoal
           git pull origin main
