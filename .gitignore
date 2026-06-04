@@ -1,0 +1,27 @@
+# Ambiente
+venv/
+env/
+__pycache__/
+*.pyc
+.env
+
+# Memória
+memory/chroma_db/
+
+# Google
+config/credentials.json
+config/token.json
+config/outlook_token.json
+
+# Banco de dados local
+memory/agente.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
