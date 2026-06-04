@@ -211,3 +211,4 @@ MIT License
 ---
 
 **Desenvolvido com ❤️ usando LangGraph, FastAPI, Streamlit, SQLAlchemy, Docker e Whisper**
+# Deploy testado em Thu Jun  4 16:58:46 ESAST 2026
