@@ -7,7 +7,6 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from config.settings import Config
-from memory.vector_store import MemoriaAgente
 from tools import WebSearchTool
 
 class TestConfig:
@@ -22,11 +21,12 @@ class TestConfig:
         assert Config.TEMPERATURE == 0.2
 
 class TestMemoria:
-    """Testes de memória"""
+    """Testes de memória — usa fallback JSON quando chromadb não está instalado"""
 
     @pytest.fixture
-    def memoria(self):
-        return MemoriaAgente(persist_dir="/tmp/test_chroma")
+    def memoria(self, tmp_path):
+        from memory.vector_store import MemoriaAgente
+        return MemoriaAgente(persist_dir=str(tmp_path))
 
     def test_salvar_conversa(self, memoria):
         memoria.salvar_conversa("Olá", "Oi! Como posso ajudar?")
