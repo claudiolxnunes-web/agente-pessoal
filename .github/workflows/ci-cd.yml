@@ -47,20 +47,19 @@ jobs:
     if: github.ref == 'refs/heads/main'
 
     steps:
-    - name: Configura SSH
-      uses: webfactory/ssh-agent@v0.9.0
-      with:
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
     - name: Deploy via SSH para GCP
       env:
+        SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         REMOTE_HOST: ${{ secrets.DEPLOY_HOST }}
         REMOTE_USER: ${{ secrets.DEPLOY_USER }}
       run: |
+        mkdir -p ~/.ssh
+        printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+        chmod 600 ~/.ssh/deploy_key
         CLEAN_HOST=$(echo "$REMOTE_HOST" | tr -d '[:space:]')
         CLEAN_USER=$(echo "$REMOTE_USER" | tr -d '[:space:]')
         ssh-keyscan "$CLEAN_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
-        ssh -o StrictHostKeyChecking=no "$CLEAN_USER@$CLEAN_HOST" '
+        ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no "$CLEAN_USER@$CLEAN_HOST" '
           set -e
           cd ~/agente_pessoal
           git pull origin main
