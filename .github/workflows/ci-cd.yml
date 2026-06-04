@@ -57,8 +57,8 @@ jobs:
         REMOTE_HOST: ${{ secrets.DEPLOY_HOST }}
         REMOTE_USER: ${{ secrets.DEPLOY_USER }}
       run: |
-        ssh-keyscan -H "$REMOTE_HOST" >> ~/.ssh/known_hosts
-        ssh "$REMOTE_USER@$REMOTE_HOST" '
+        ssh-keyscan "$REMOTE_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
+        ssh -o StrictHostKeyChecking=no "$REMOTE_USER@$REMOTE_HOST" '
           set -e
           cd ~/agente_pessoal
           git pull origin main
