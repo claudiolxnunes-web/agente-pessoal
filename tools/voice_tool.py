@@ -2,7 +2,6 @@
 import os
 import tempfile
 from typing import Optional, Dict, Any
-import whisper
 
 class VoiceTool:
     """Ferramenta para transcrição e síntese de voz"""
@@ -15,10 +14,13 @@ class VoiceTool:
     def _load_model(self):
         """Carrega modelo Whisper (lazy loading)"""
         if not self._loaded:
-            print(f"🔄 Carregando modelo Whisper: {self.model_name}")
+            try:
+                import whisper
+            except ImportError:
+                raise ImportError("openai-whisper não instalado. Execute: pip install openai-whisper")
+            print(f"Carregando modelo Whisper: {self.model_name}")
             self.model = whisper.load_model(self.model_name)
             self._loaded = True
-            print("✅ Modelo carregado!")
 
     def transcrever_audio(self, caminho_audio: str, idioma: str = "pt") -> Dict[str, Any]:
         """Transcreve arquivo de áudio para texto"""

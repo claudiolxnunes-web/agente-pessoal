@@ -61,7 +61,7 @@ class TestVoiceTool:
     """Testes de voz"""
 
     def test_info(self):
-        from tools import VoiceTool
+        from tools.voice_tool import VoiceTool
         voice = VoiceTool("base")
         info = voice.info()
         assert "Whisper" in info
