@@ -53,9 +53,11 @@ jobs:
         REMOTE_HOST: ${{ secrets.DEPLOY_HOST }}
         REMOTE_USER: ${{ secrets.DEPLOY_USER }}
       run: |
-        echo "$SSH_KEY" > deploy_key.pem
-        chmod 600 deploy_key.pem
-        ssh -i deploy_key.pem -o StrictHostKeyChecking=no "$REMOTE_USER@$REMOTE_HOST" '
+        mkdir -p ~/.ssh
+        echo "$SSH_KEY" | tr -d '\r' > ~/.ssh/deploy_key
+        chmod 600 ~/.ssh/deploy_key
+        ssh-keyscan -H "$REMOTE_HOST" >> ~/.ssh/known_hosts
+        ssh -i ~/.ssh/deploy_key "$REMOTE_USER@$REMOTE_HOST" '
           set -e
           cd ~/agente_pessoal
           git pull origin main
