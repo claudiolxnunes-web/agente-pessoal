@@ -76,7 +76,6 @@ if __name__ == "__main__":
 
     print("🚀 WhatsApp Webhook iniciado!")
     print(f"🌐 URL: {Config.WHATSAPP_WEBHOOK_URL}")
-    print("Configure esta URL no Facebook Developers
-")
+    print("Configure esta URL no Facebook Developers\n")
 
     uvicorn.run(app, host="0.0.0.0", port=8000)

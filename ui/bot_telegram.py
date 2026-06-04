@@ -18,16 +18,10 @@ dp = Dispatcher()
 @dp.message(Command("start"))
 async def cmd_start(message: Message):
     await message.answer(
-        f"🤖 Olá! Sou *{Config.AGENT_NAME}*, seu assistente pessoal.
-
-"
-        "Posso ajudar com:
-"
-        "📅 Calendário | 📝 Tarefas | 📧 Emails
-"
-        "🔍 Busca | 📄 Documentos | ⏰ Agendamentos
-
-"
+        f"🤖 Olá! Sou *{Config.AGENT_NAME}*, seu assistente pessoal.\n\n"
+        "Posso ajudar com:\n"
+        "📅 Calendário | 📝 Tarefas | 📧 Emails\n"
+        "🔍 Busca | 📄 Documentos | ⏰ Agendamentos\n\n"
         "Envie qualquer mensagem ou use /ajuda",
         parse_mode="Markdown"
     )
@@ -81,8 +75,7 @@ async def handle_message(message: Message):
 async def main():
     print("🚀 Bot Telegram iniciado!")
     print(f"🤖 Nome: {Config.AGENT_NAME}")
-    print("Pressione Ctrl+C para parar.
-")
+    print("Pressione Ctrl+C para parar.\n")
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
@@ -95,5 +88,4 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print("
-🛑 Bot parado.")
+        print("\n🛑 Bot parado.")
