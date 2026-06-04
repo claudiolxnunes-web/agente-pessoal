@@ -59,6 +59,7 @@ jobs:
           set -e
           cd ~/agente_pessoal
           git pull origin main
+          source venv/bin/activate
           pip install -r requirements.txt --quiet
           python -c "from database.models import init_db; init_db()"
           echo "Deploy concluido com sucesso!"
