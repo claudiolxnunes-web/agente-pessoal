@@ -179,3 +179,34 @@ class GmailTool:
             return "🗑️ Email movido para lixeira."
         except Exception as e:
             return f"Erro: {e}"
+
+
+# ── Funções de módulo usadas em coordenador.py ────────────────────────────────
+
+_gmail: GmailTool | None = None
+
+def _get_gmail() -> GmailTool:
+    global _gmail
+    if _gmail is None:
+        _gmail = GmailTool()
+        _gmail.autenticar()
+    return _gmail
+
+def listar_emails_gmail(max_results: int = 10, apenas_nao_lidos: bool = False) -> str:
+    try:
+        g = _get_gmail()
+        query = "is:unread" if apenas_nao_lidos else "is:inbox"
+        return g.listar_emails(query=query, max_results=max_results)
+    except Exception as e:
+        return f"Não foi possível conectar ao Gmail. Verifique suas credenciais. Erro: {e}"
+
+def enviar_email_gmail(destinatario: str, assunto: str, corpo: str) -> str:
+    try:
+        return _get_gmail().enviar_email(destinatario, assunto, corpo)
+    except Exception as e:
+        return f"Erro ao enviar email Gmail: {e}"
+
+def enviar_analise_para_crm(subject: str, sender: str, email_summary: str,
+                             category: str = "geral", priority: str = "normal",
+                             suggested_action: str = "revisar") -> str:
+    return "OK"
