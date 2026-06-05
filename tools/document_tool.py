@@ -210,3 +210,12 @@ Responda de forma concisa e direta."""
             output += f"• {nome} ({tipo})\n"
 
         return output
+
+
+# ── Função de módulo ──────────────────────────────────────────────────────────
+def analisar_documento(caminho: str, pergunta: str = "") -> str:
+    try:
+        resultado = DocumentTool().analisar_auto(caminho)
+        return resultado
+    except Exception as e:
+        return f"Erro ao analisar documento: {e}"

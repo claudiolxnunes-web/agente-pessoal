@@ -124,3 +124,14 @@ Status: {'Carregado' if self._loaded else 'Não carregado'}
 Suporta: MP3, WAV, OGG, M4A
 Idiomas: pt (português), en (inglês), es (espanhol), etc.
 """
+
+
+# ── Função de módulo ──────────────────────────────────────────────────────────
+def transcrever_audio(caminho: str) -> str:
+    try:
+        resultado = VoiceTool().transcrever_audio(caminho)
+        if resultado.get("sucesso"):
+            return f"Transcrição: {resultado['texto']}"
+        return f"Erro na transcrição: {resultado.get('erro', 'desconhecido')}"
+    except Exception as e:
+        return f"Erro de voz: {e}"

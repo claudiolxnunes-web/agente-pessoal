@@ -100,3 +100,12 @@ class WebSearchTool:
             output += "\n"
 
         return output
+
+
+# ── Função de módulo ──────────────────────────────────────────────────────────
+def buscar_web(query: str, max_results: int = 5) -> str:
+    import os
+    try:
+        return WebSearchTool(serpapi_key=os.getenv("SERPAPI_KEY")).buscar(query, num_results=max_results)
+    except Exception as e:
+        return f"Erro na busca: {e}"

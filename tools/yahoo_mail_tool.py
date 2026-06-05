@@ -165,3 +165,18 @@ class YahooMailTool:
         if not self.email:
             return "❌ Yahoo Mail não configurado."
         return f"📧 Yahoo Mail: {self.email}"
+
+
+# ── Funções de módulo ─────────────────────────────────────────────────────────
+def listar_emails_yahoo(max_results: int = 10, apenas_nao_lidos: bool = False) -> str:
+    try:
+        tool = YahooMailTool()
+        return tool.listar_emails(max_results=max_results, nao_lidos=apenas_nao_lidos)
+    except Exception as e:
+        return f"Erro Yahoo Mail: {e}"
+
+def enviar_email_yahoo(destinatario: str, assunto: str, corpo: str) -> str:
+    try:
+        return YahooMailTool().enviar_email(destinatario, assunto, corpo)
+    except Exception as e:
+        return f"Erro ao enviar Yahoo: {e}"

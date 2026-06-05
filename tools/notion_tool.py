@@ -154,3 +154,27 @@ class NotionTool:
             return f"Erro ao atualizar: {resultado['error']}"
 
         return "✅ Tarefa atualizada com sucesso."
+
+
+# ── Funções de módulo ─────────────────────────────────────────────────────────
+def criar_tarefa_notion(titulo: str, descricao: str = "", prioridade: str = "Média") -> str:
+    import os
+    try:
+        tool = NotionTool(
+            token=os.getenv("NOTION_TOKEN", ""),
+            database_id=os.getenv("NOTION_DATABASE_ID", "")
+        )
+        return tool.criar_tarefa(titulo, prioridade=prioridade)
+    except Exception as e:
+        return f"Erro Notion: {e}"
+
+def listar_tarefas_notion() -> str:
+    import os
+    try:
+        tool = NotionTool(
+            token=os.getenv("NOTION_TOKEN", ""),
+            database_id=os.getenv("NOTION_DATABASE_ID", "")
+        )
+        return tool.listar_tarefas()
+    except Exception as e:
+        return f"Erro Notion: {e}"

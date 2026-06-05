@@ -124,3 +124,18 @@ class WhatsAppTool:
             return response.json()
         except:
             return {}
+
+
+# ── Função de módulo ──────────────────────────────────────────────────────────
+def enviar_mensagem_whatsapp(numero: str, mensagem: str) -> str:
+    import os
+    try:
+        tool = WhatsAppTool(
+            phone_number_id=os.getenv("WHATSAPP_PHONE_NUMBER_ID", ""),
+            access_token=os.getenv("WHATSAPP_ACCESS_TOKEN", ""),
+            verify_token=os.getenv("WHATSAPP_VERIFY_TOKEN", "")
+        )
+        result = tool.enviar_mensagem(numero, mensagem)
+        return f"✅ WhatsApp enviado" if result else "❌ Erro ao enviar WhatsApp"
+    except Exception as e:
+        return f"Erro WhatsApp: {e}"

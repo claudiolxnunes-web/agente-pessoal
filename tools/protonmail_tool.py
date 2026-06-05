@@ -143,3 +143,17 @@ class ProtonMailTool:
         email = usuario.get("Email", "Não disponível")
 
         return f"🔒 ProtonMail: {nome} ({email})"
+
+
+# ── Funções de módulo ─────────────────────────────────────────────────────────
+def listar_emails_proton(max_results: int = 10, apenas_nao_lidos: bool = False) -> str:
+    try:
+        return ProtonMailTool().listar_emails(max_results=max_results)
+    except Exception as e:
+        return f"Erro ProtonMail: {e}"
+
+def enviar_email_proton(destinatario: str, assunto: str, corpo: str) -> str:
+    try:
+        return ProtonMailTool().enviar_email(destinatario, assunto, corpo)
+    except Exception as e:
+        return f"Erro ao enviar ProtonMail: {e}"

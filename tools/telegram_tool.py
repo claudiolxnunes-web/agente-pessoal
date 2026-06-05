@@ -97,3 +97,17 @@ Ou simplesmente converse comigo!"""
         self._running = False
         await self.bot.session.close()
         print("🛑 Bot Telegram parado.")
+
+
+# ── Função de módulo ──────────────────────────────────────────────────────────
+def enviar_mensagem_telegram(chat_id: str, mensagem: str) -> str:
+    import os, asyncio
+    try:
+        token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+        tool = TelegramTool(token)
+        asyncio.get_event_loop().run_until_complete(
+            tool.enviar_mensagem(int(chat_id), mensagem)
+        )
+        return f"✅ Mensagem Telegram enviada para {chat_id}"
+    except Exception as e:
+        return f"Erro Telegram: {e}"

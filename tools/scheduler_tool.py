@@ -235,3 +235,27 @@ class SchedulerTool:
         if self._thread:
             self._thread.join(timeout=2)
         return "🛑 Scheduler parado."
+
+
+# ── Funções de módulo ─────────────────────────────────────────────────────────
+_scheduler = None
+
+def _get_scheduler():
+    global _scheduler
+    if _scheduler is None:
+        from tools.scheduler_tool import SchedulerTool
+        _scheduler = SchedulerTool()
+    return _scheduler
+
+def agendar_diario(funcao, hora: int, minuto: int = 0, nome: str = "tarefa") -> str:
+    try:
+        hora_str = f"{hora:02d}:{minuto:02d}"
+        return _get_scheduler().agendar_diario(nome, hora_str, nome)
+    except Exception as e:
+        return f"Erro ao agendar: {e}"
+
+def listar_tarefas_agendadas() -> str:
+    try:
+        return _get_scheduler().listar_tarefas()
+    except Exception as e:
+        return f"Erro ao listar agendamentos: {e}"
