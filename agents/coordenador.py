@@ -577,8 +577,8 @@ def processar_mensagem(mensagem: str, sessao_id: str = "") -> str:
     return estado_final.get("resultado", "❌ Não foi possível processar sua mensagem.")
 
 
-# Alias para compatibilidade com api/main.py
-conversar = processar_mensagem
+def conversar(mensagem: str, thread_id: str = "") -> str:
+    return processar_mensagem(mensagem, sessao_id=thread_id)
 
 
 # ── Interface de Terminal ──────────────────────────────────────────────────────
