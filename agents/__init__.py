@@ -1,4 +1,4 @@
 """Agentes do sistema"""
-from .coordenador import conversar, EstadoSistema
+from .coordenador import conversar
 
-__all__ = ["conversar", "EstadoSistema"]
+__all__ = ["conversar"]

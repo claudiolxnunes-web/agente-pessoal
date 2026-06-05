@@ -155,3 +155,32 @@ class GoogleCalendarTool:
             return "✅ Evento deletado com sucesso."
         except Exception as e:
             return f"Erro ao deletar: {e}"
+
+
+# ── Funções de módulo usadas em coordenador.py ────────────────────────────────
+
+_calendar: GoogleCalendarTool | None = None
+
+def _get_calendar() -> GoogleCalendarTool:
+    global _calendar
+    if _calendar is None:
+        _calendar = GoogleCalendarTool()
+        _calendar.autenticar()
+    return _calendar
+
+def criar_evento_calendar(titulo: str, data_hora: str, duracao_horas: int = 1,
+                           descricao: str = "", local: str = "") -> str:
+    try:
+        from datetime import datetime, timedelta
+        dt = datetime.strptime(data_hora, "%d/%m/%Y %H:%M")
+        inicio = dt.isoformat()
+        fim = (dt + timedelta(hours=duracao_horas)).isoformat()
+        return _get_calendar().criar_evento(titulo, inicio, fim, descricao, local)
+    except Exception as e:
+        return f"Erro ao criar evento: {e}"
+
+def listar_eventos_calendar(dias: int = 7) -> str:
+    try:
+        return _get_calendar().listar_eventos(dias=dias)
+    except Exception as e:
+        return f"Erro ao listar eventos: {e}"
