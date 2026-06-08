@@ -1,6 +1,7 @@
 """Integração com Google Calendar"""
 import os
 import pickle
+import logging
 from datetime import datetime, timedelta
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -9,6 +10,8 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 SCOPES = ['https://www.googleapis.com/auth/calendar']
+
+logger = logging.getLogger(__name__)
 
 class GoogleCalendarTool:
     """Ferramenta para gerenciar Google Calendar"""
@@ -20,7 +23,13 @@ class GoogleCalendarTool:
         self.autenticado = False
 
     def autenticar(self):
-        """Autentica com OAuth2 do Google"""
+        """Autentica com OAuth2 do Google.
+
+        Em servidor (sem navegador), o token deve ser gerado uma vez na
+        máquina local (com OAUTH_FLUXO_LOCAL=true) e o arquivo
+        config/token.json copiado para o servidor — aqui só fazemos a
+        renovação automática via refresh_token.
+        """
         creds = None
 
         # Carrega token existente
@@ -28,19 +37,32 @@ class GoogleCalendarTool:
             with open(self.token_path, 'rb') as token:
                 creds = pickle.load(token)
 
-        # Se não existir ou estiver expirado, recria
-        if not creds or not creds.valid:
-            if creds and creds.expired and creds.refresh_token:
+        if creds and not creds.valid and creds.expired and creds.refresh_token:
+            try:
                 creds.refresh(Request())
-            else:
+                with open(self.token_path, 'wb') as token:
+                    pickle.dump(creds, token)
+            except Exception as e:
+                logger.error(f"Falha ao renovar token Google Calendar: {e}")
+                creds = None
+
+        # Se ainda não temos credenciais válidas, decide como obter
+        if not creds or not creds.valid:
+            if os.getenv("OAUTH_FLUXO_LOCAL", "false").lower() == "true":
                 if not os.path.exists(self.credentials_path):
-                    print("⚠️  Arquivo credentials.json não encontrado!")
-                    print("   Vá em https://console.cloud.google.com/ para criar.")
+                    logger.error("config/credentials.json não encontrado para autorizar o Calendar.")
                     return False
 
                 flow = InstalledAppFlow.from_client_secrets_file(
                     self.credentials_path, SCOPES)
                 creds = flow.run_local_server(port=0)
+            else:
+                logger.error(
+                    "Token do Google Calendar ausente ou expirado sem refresh_token. "
+                    "Gere o token localmente (rode com OAUTH_FLUXO_LOCAL=true em uma "
+                    "máquina com navegador) e copie config/token.json para o servidor."
+                )
+                return False
 
             # Salva token para próximas execuções
             with open(self.token_path, 'wb') as token:
@@ -161,26 +183,35 @@ class GoogleCalendarTool:
 
 _calendar: GoogleCalendarTool | None = None
 
-def _get_calendar() -> GoogleCalendarTool:
+def _get_calendar() -> GoogleCalendarTool | None:
     global _calendar
-    if _calendar is None:
-        _calendar = GoogleCalendarTool()
-        _calendar.autenticar()
+    if _calendar is not None and _calendar.autenticado:
+        return _calendar
+    tool = GoogleCalendarTool()
+    if not tool.autenticar():
+        return None
+    _calendar = tool
     return _calendar
 
 def criar_evento_calendar(titulo: str, data_hora: str, duracao_horas: int = 1,
                            descricao: str = "", local: str = "") -> str:
     try:
         from datetime import datetime, timedelta
+        cal = _get_calendar()
+        if cal is None:
+            return "❌ Não foi possível autenticar com o Google Calendar. Verifique config/credentials.json e config/token.json."
         dt = datetime.strptime(data_hora, "%d/%m/%Y %H:%M")
         inicio = dt.isoformat()
         fim = (dt + timedelta(hours=duracao_horas)).isoformat()
-        return _get_calendar().criar_evento(titulo, inicio, fim, descricao, local)
+        return cal.criar_evento(titulo, inicio, fim, descricao, local)
     except Exception as e:
         return f"Erro ao criar evento: {e}"
 
 def listar_eventos_calendar(dias: int = 7) -> str:
     try:
-        return _get_calendar().listar_eventos(dias=dias)
+        cal = _get_calendar()
+        if cal is None:
+            return "❌ Não foi possível autenticar com o Google Calendar. Verifique config/credentials.json e config/token.json."
+        return cal.listar_eventos(dias=dias)
     except Exception as e:
         return f"Erro ao listar eventos: {e}"

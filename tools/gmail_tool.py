@@ -2,6 +2,7 @@
 import os
 import pickle
 import base64
+import logging
 from datetime import datetime, timedelta
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -13,6 +14,8 @@ from email.mime.multipart import MIMEMultipart
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.modify']
 
+logger = logging.getLogger(__name__)
+
 class GmailTool:
     """Ferramenta para gerenciar Gmail"""
 
@@ -23,22 +26,43 @@ class GmailTool:
         self.autenticado = False
 
     def autenticar(self):
-        """Autentica com OAuth2 do Google"""
+        """Autentica com OAuth2 do Google.
+
+        Em servidor (sem navegador), o token deve ser gerado uma vez na
+        máquina local (com OAUTH_FLUXO_LOCAL=true) e o arquivo
+        config/token_gmail.json copiado para o servidor — aqui só fazemos
+        a renovação automática via refresh_token.
+        """
         creds = None
 
         if os.path.exists(self.token_path):
             with open(self.token_path, 'rb') as token:
                 creds = pickle.load(token)
 
-        if not creds or not creds.valid:
-            if creds and creds.expired and creds.refresh_token:
+        if creds and not creds.valid and creds.expired and creds.refresh_token:
+            try:
                 creds.refresh(Request())
-            else:
+                with open(self.token_path, 'wb') as token:
+                    pickle.dump(creds, token)
+            except Exception as e:
+                logger.error(f"Falha ao renovar token Gmail: {e}")
+                creds = None
+
+        if not creds or not creds.valid:
+            if os.getenv("OAUTH_FLUXO_LOCAL", "false").lower() == "true":
                 if not os.path.exists(self.credentials_path):
+                    logger.error("config/credentials.json não encontrado para autorizar o Gmail.")
                     return False
                 flow = InstalledAppFlow.from_client_secrets_file(
                     self.credentials_path, SCOPES)
                 creds = flow.run_local_server(port=0)
+            else:
+                logger.error(
+                    "Token do Gmail ausente ou expirado sem refresh_token. "
+                    "Gere o token localmente (rode com OAUTH_FLUXO_LOCAL=true em uma "
+                    "máquina com navegador) e copie config/token_gmail.json para o servidor."
+                )
+                return False
 
             with open(self.token_path, 'wb') as token:
                 pickle.dump(creds, token)
@@ -185,16 +209,21 @@ class GmailTool:
 
 _gmail: GmailTool | None = None
 
-def _get_gmail() -> GmailTool:
+def _get_gmail() -> GmailTool | None:
     global _gmail
-    if _gmail is None:
-        _gmail = GmailTool()
-        _gmail.autenticar()
+    if _gmail is not None and _gmail.autenticado:
+        return _gmail
+    tool = GmailTool()
+    if not tool.autenticar():
+        return None
+    _gmail = tool
     return _gmail
 
 def listar_emails_gmail(max_results: int = 10, apenas_nao_lidos: bool = False) -> str:
     try:
         g = _get_gmail()
+        if g is None:
+            return "❌ Não foi possível autenticar com o Gmail. Verifique config/credentials.json e config/token_gmail.json."
         query = "is:unread" if apenas_nao_lidos else "is:inbox"
         return g.listar_emails(query=query, max_results=max_results)
     except Exception as e:
@@ -202,7 +231,10 @@ def listar_emails_gmail(max_results: int = 10, apenas_nao_lidos: bool = False) -
 
 def enviar_email_gmail(destinatario: str, assunto: str, corpo: str) -> str:
     try:
-        return _get_gmail().enviar_email(destinatario, assunto, corpo)
+        g = _get_gmail()
+        if g is None:
+            return "❌ Não foi possível autenticar com o Gmail. Verifique config/credentials.json e config/token_gmail.json."
+        return g.enviar_email(destinatario, assunto, corpo)
     except Exception as e:
         return f"Erro ao enviar email Gmail: {e}"
 

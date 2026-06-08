@@ -22,8 +22,9 @@ from tools.google_calendar_tool import criar_evento_calendar, listar_eventos_cal
 from tools.gmail_tool import listar_emails_gmail, enviar_email_gmail, enviar_analise_para_crm
 from tools.outlook_tool import listar_emails_outlook, enviar_email_outlook, listar_eventos_outlook
 from tools.yahoo_mail_tool import listar_emails_yahoo, enviar_email_yahoo
-from tools.titan_tool import list_emails as listar_emails_titan, send_email as enviar_email_titan
+from tools.titan_tool import list_emails as listar_emails_titan, send_email as enviar_email_titan, TITAN_ENABLED
 from tools.protonmail_tool import listar_emails_proton, enviar_email_proton
+from tools.email_config import verificar_gmail, verificar_yahoo, verificar_outlook, verificar_proton
 from tools.notion_tool import criar_tarefa_notion, listar_tarefas_notion
 from tools.web_search_tool import buscar_web
 from tools.document_tool import analisar_documento
@@ -211,6 +212,10 @@ def _formatar_emails_titan(r) -> str:
 # ══════════════════════════════════════════════════════════════════════════════
 def agente_gmail(estado: EstadoAgente) -> EstadoAgente:
     """Gerencia e-mails do Gmail com filtro de resumo agro e envio ao CRM."""
+    aviso = verificar_gmail()
+    if aviso:
+        return {**estado, "resultado": aviso}
+
     entrada = estado["entrada_usuario"]
     entrada_lower = entrada.lower()
     r = _processar_email(entrada, listar_emails_gmail, enviar_email_gmail, "Gmail")
@@ -251,6 +256,10 @@ def agente_gmail(estado: EstadoAgente) -> EstadoAgente:
 
 def agente_outlook(estado: EstadoAgente) -> EstadoAgente:
     """Gerencia e-mails e eventos do Outlook/Microsoft 365."""
+    aviso = verificar_outlook()
+    if aviso:
+        return {**estado, "resultado": aviso}
+
     entrada_lower = estado["entrada_usuario"].lower()
 
     if any(p in entrada_lower for p in ["evento", "reunião", "calendário"]):
@@ -267,6 +276,10 @@ def agente_outlook(estado: EstadoAgente) -> EstadoAgente:
 
 def agente_yahoo(estado: EstadoAgente) -> EstadoAgente:
     """Gerencia e-mails do Yahoo Mail."""
+    aviso = verificar_yahoo()
+    if aviso:
+        return {**estado, "resultado": aviso}
+
     r = _processar_email(
         estado["entrada_usuario"],
         listar_emails_yahoo,
@@ -278,6 +291,10 @@ def agente_yahoo(estado: EstadoAgente) -> EstadoAgente:
 
 def agente_proton(estado: EstadoAgente) -> EstadoAgente:
     """Gerencia e-mails do ProtonMail."""
+    aviso = verificar_proton()
+    if aviso:
+        return {**estado, "resultado": aviso}
+
     r = _processar_email(
         estado["entrada_usuario"],
         listar_emails_proton,
@@ -308,6 +325,8 @@ def agente_email_generico(estado: EstadoAgente) -> EstadoAgente:
         return agente_yahoo(estado)
     elif PROTONMAIL_ENABLED:
         return agente_proton(estado)
+    elif TITAN_ENABLED:
+        return agente_titan(estado)
     else:
         return {**estado, "resultado": "⚠️ Nenhum provedor de e-mail habilitado. Configure no .env"}
 
