@@ -85,7 +85,14 @@ async def handle_message(message: Message):
             await bot.download_file(file.file_path, destination=tmp.name)
             tmp_path = tmp.name
         try:
-            texto = transcrever_audio(tmp_path)
+            _t = transcrever_audio(tmp_path)
+            if isinstance(_t, dict):
+                if not _t.get("sucesso"):
+                    await message.answer(f"⚠️ {_t.get('erro', 'Falha na transcricao.')}")
+                    return
+                texto = _t.get("texto", "")
+            else:
+                texto = _t
             await message.answer(f"🎤 Transcrito: {texto}")
         finally:
             os.remove(tmp_path)
