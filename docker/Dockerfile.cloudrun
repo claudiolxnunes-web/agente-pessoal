@@ -1,0 +1,32 @@
+FROM python:3.11-slim
+
+LABEL description="Agente Pessoal v3.1 — Cloud Run optimized"
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app \
+    PORT=8080
+
+WORKDIR /app
+
+# Dependências do sistema
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc g++ curl ffmpeg libsndfile1 \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Dependências Python (em camada separada para cache)
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt \
+    # Driver PostgreSQL para Cloud SQL
+    && pip install --no-cache-dir psycopg2-binary cloud-sql-python-connector[pg8000]
+
+# Código da aplicação
+COPY . .
+RUN mkdir -p memory config
+
+# Cloud Run usa a variável $PORT
+EXPOSE $PORT
+
+# Entrypoint padrão (substituível via --command no deploy)
+CMD ["python", "api/main.py"]

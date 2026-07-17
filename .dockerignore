@@ -1,0 +1,21 @@
+# Dockerignore
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.env
+venv/
+env/
+.git/
+.gitignore
+memory/chroma_db/
+config/credentials.json
+config/token.json
+*.log
+.DS_Store
